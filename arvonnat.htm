@@ -64,6 +64,30 @@
             </p>
         </div>
 
+
+        <div class="w-full max-w-3xl mt-10 flex flex-col sm:flex-row gap-3">
+            <div class="relative flex-1">
+                <input
+                    id="search-arvonnat"
+                    type="search"
+                    placeholder="Hae arvontoja..."
+                    class="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-lg text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-200 transition">
+            </div>
+
+            <select
+                id="sort-arvonnat"
+                class="bg-white border border-slate-300 rounded-xl px-4 py-3 text-lg text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-200 transition cursor-pointer">
+                <option value="default">Järjestys: oletus</option>
+                <option value="ending-soon">Päättyy pian</option>
+                <option value="ending-late">Päättyy myöhemmin</option>
+                <option value="name-asc">Nimi A–Ö</option>
+                <option value="name-desc">Nimi Ö–A</option>
+                <option value="applied">Osallistuneet ensin</option>
+                <option value="not-applied">Osallistumattomat ensin</option>
+            </select>
+        </div>
+
+
         <section class="w-full max-w-3xl mt-10">
 
             <div
@@ -595,60 +619,132 @@
             }, { passive: true });
         }
 
-        arvonnat.forEach(arvonta => {
-            const ended =
-                new Date(arvonta.ends).getTime() <= Date.now();
+        const searchInput = document.getElementById("search-arvonnat");
+        const sortSelect = document.getElementById("sort-arvonnat");
 
-            const card = createCard(arvonta, ended);
+        function sortArvonnat(items, sortType) {
+            const sorted = [...items];
 
-            if (ended) {
-                addCard(card, paattyneetContainer);
-            } else {
-                addCard(card, aktiivisetContainer);
+            if (sortType === "ending-soon") {
+                sorted.sort((a, b) => new Date(a.ends) - new Date(b.ends));
             }
-        });
 
-        jatkuvatArvonnat.forEach(arvonta => {
-            const card = createCard(arvonta, false, true);
+            if (sortType === "ending-late") {
+                sorted.sort((a, b) => new Date(b.ends) - new Date(a.ends));
+            }
 
-            addCard(card, jatkuvatContainer);
-        });
+            if (sortType === "name-asc") {
+                sorted.sort((a, b) => a.title.localeCompare(b.title, "fi"));
+            }
 
-        const activeCount = document.querySelectorAll(
-            "#aktiiviset-arvonnat .giveaway-card"
-        ).length;
+            if (sortType === "name-desc") {
+                sorted.sort((a, b) => b.title.localeCompare(a.title, "fi"));
+            }
 
-        if (activeCount === 0) {
-            aktiivisetContainer.innerHTML = `
-                <div class="col-span-full text-center py-8 text-slate-500 text-lg">
-                    Tällä hetkellä ei ole aktiivisia arvontoja.
-                </div>
-            `;
+            if (sortType === "applied") {
+                sorted.sort((a, b) => Number(hasApplied(b.id)) - Number(hasApplied(a.id)));
+            }
+
+            if (sortType === "not-applied") {
+                sorted.sort((a, b) => Number(hasApplied(a.id)) - Number(hasApplied(b.id)));
+            }
+
+            return sorted;
         }
 
-        const endedCount = document.querySelectorAll(
-            "#paattyneet-arvonnat .giveaway-card"
-        ).length;
+        function filterArvonnat(items, searchTerm) {
+            const term = searchTerm.trim().toLocaleLowerCase("fi");
 
-        if (endedCount === 0) {
-            paattyneetContainer.innerHTML = `
+            if (!term) {
+                return [...items];
+            }
+
+            return items.filter(arvonta =>
+                arvonta.title.toLocaleLowerCase("fi").includes(term) ||
+                arvonta.description.toLocaleLowerCase("fi").includes(term)
+            );
+        }
+
+        function renderEmpty(container, message) {
+            container.innerHTML = `
                 <div class="col-span-full text-center py-8 text-slate-400 text-lg">
-                    Ei päättyneitä arvontoja.
+                    ${message}
                 </div>
             `;
         }
 
-        const recurringCount = document.querySelectorAll(
-            "#jatkuvat-arvonnat .giveaway-card"
-        ).length;
+        function renderArvonnat() {
+            aktiivisetContainer.innerHTML = "";
+            paattyneetContainer.innerHTML = "";
+            jatkuvatContainer.innerHTML = "";
 
-        if (recurringCount === 0) {
-            jatkuvatContainer.innerHTML = `
-                <div class="col-span-full text-center py-8 text-slate-400 text-lg">
-                    Ei jatkuvia arvontoja.
-                </div>
-            `;
+            const searchTerm = searchInput.value;
+            const sortType = sortSelect.value;
+
+            const filteredArvonnat = filterArvonnat(arvonnat, searchTerm);
+            const filteredJatkuvat = filterArvonnat(jatkuvatArvonnat, searchTerm);
+
+            const activeArvonnat = filteredArvonnat.filter(arvonta =>
+                new Date(arvonta.ends).getTime() > Date.now()
+            );
+
+            const endedArvonnat = filteredArvonnat.filter(arvonta =>
+                new Date(arvonta.ends).getTime() <= Date.now()
+            );
+
+            sortArvonnat(activeArvonnat, sortType).forEach(arvonta => {
+                addCard(
+                    createCard(arvonta, false),
+                    aktiivisetContainer
+                );
+            });
+
+            sortArvonnat(endedArvonnat, sortType).forEach(arvonta => {
+                addCard(
+                    createCard(arvonta, true),
+                    paattyneetContainer
+                );
+            });
+
+            sortArvonnat(filteredJatkuvat, sortType).forEach(arvonta => {
+                addCard(
+                    createCard(arvonta, false, true),
+                    jatkuvatContainer
+                );
+            });
+
+            if (activeArvonnat.length === 0) {
+                renderEmpty(
+                    aktiivisetContainer,
+                    searchTerm
+                        ? "Haulla ei löytynyt aktiivisia arvontoja."
+                        : "Tällä hetkellä ei ole aktiivisia arvontoja."
+                );
+            }
+
+            if (endedArvonnat.length === 0) {
+                renderEmpty(
+                    paattyneetContainer,
+                    searchTerm
+                        ? "Haulla ei löytynyt päättyneitä arvontoja."
+                        : "Ei päättyneitä arvontoja."
+                );
+            }
+
+            if (filteredJatkuvat.length === 0) {
+                renderEmpty(
+                    jatkuvatContainer,
+                    searchTerm
+                        ? "Haulla ei löytynyt jatkuvia arvontoja."
+                        : "Ei jatkuvia arvontoja."
+                );
+            }
         }
+
+        searchInput.addEventListener("input", renderArvonnat);
+        sortSelect.addEventListener("change", renderArvonnat);
+
+        renderArvonnat();
     </script>
 
 </body>
