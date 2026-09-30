@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="fi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Arvonnat</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Londrina+Solid:wght@100;300;400;900&display=swap');
+
+        .card-wrapper {
+            perspective: 1000px;
+        }
+
+        .giveaway-card {
+            transform-style: preserve-3d;
+            transition:
+                transform 0.15s ease-out,
+                box-shadow 0.2s ease-out;
+            will-change: transform;
+        }
+
+        .giveaway-card:hover {
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .giveaway-card:active {
+            transition: transform 0.05s ease-out;
+        }
+
+        .giveaway-card.applied {
+            border-color: rgb(74 222 128);
+            box-shadow: 0 10px 30px rgba(34, 197, 94, 0.15);
+        }
+
+        .checkbox {
+            accent-color: rgb(34 197 94);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-200" style="font-family: 'Londrina Solid', cursive;">
+
+    <noscript>
+        Please enable JavaScript to view this page.
+    </noscript>
+
+    <main class="flex flex-col items-center min-h-screen px-4 py-12 sm:px-6 lg:px-8">
+
+        <div class="flex flex-col items-center justify-center text-center">
+            <h1 class="text-4xl font-bold text-blue-400">
+                Osallistu erilaisiin arvontoihin
+            </h1>
+
+            <p class="text-xl">
+                <span class="font-black text-sm mx-2 text-red-500 animate-pulse">
+                    LIVE
+                </span>
+                Aktiiviset arvonnat:
+            </p>
+        </div>
+
+        <section class="w-full max-w-3xl mt-10">
+
+            <div
+                id="aktiiviset-arvonnat"
+                class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            </div>
+
+        </section>
+
+        <section class="w-full max-w-3xl mt-16">
+
+            <div class="flex items-center gap-3 mb-6">
+                <h2 class="text-3xl font-bold text-slate-600">
+                    Päättyneet arvonnat
+                </h2>
+            </div>
+
+            <div
+                id="paattyneet-arvonnat"
+                class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            </div>
+
+        </section>
+
+        <section class="w-full max-w-3xl mt-16">
+
+            <div class="flex items-center gap-3 mb-6">
+                <h2 class="text-3xl font-bold text-slate-600">
+                    Jatkuvat Arvonnat
+                </h2>
+            </div>
+
+            <div
+                id="jatkuvat-arvonnat"
+                class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            </div>
+
+        </section>
+
+    </main>
+
+    <footer class="flex flex-col lg:flex-row gap-2 items-center justify-center px-2 py-4 sm:px-6 lg:px-8 max-w-fit bg-slate-200">
+        <p class="text-sm text-slate-500">Made by</p>
+        <a
+            href="https://linkedin.com/in/joonatyni"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-2xl font-bold text-blue-400 flex hover:scale-110 transition-transform duration-200">
+            Joona Tyni
+            <img
+                src="https://jtyniedu.github.io/assets/img/chi.png"
+                alt="Joona Tyni"
+                class="w-6 h-auto ml-2">
+        </a>
+        <p class="text-sm text-slate-500">No affiliation with the linked sites or responsible for the content outside of this site. Content may be outdated or changed.</p>
+    </footer>
+
+    <script>
+        const arvonnat = [
+            {
+                id: "snellman-1",
+                title: "Snellman 100€ arvonta",
+                description: "Osallistu Snellmanin Maatiaispossun rapeat nugetit -arvontaan ja voita 100€ tuotelahjakortti!",
+                ends: "2026-10-31T23:59:00",
+                link: "https://www.k-ruoka.fi/artikkelit/kilpailut-ja-arvonnat/snellman-nugetit-arvonta"
+            },
+            {
+                id: "verkkokauppacom-1",
+                title: "Verkkokauppa.com 100€ arvonta",
+                description: "Osallistu Verkkokauppa.com -arvontaan Leppäkosken verkkosivustolla ja voita 100€ tuotelahjakortti!",
+                ends: "2026-10-04T23:59:00",
+                link: "https://leppakoski.fi/energianiksi/"
+            },
+            {
+                id: "bauhaus-1",
+                title: "Bauhaus 2500€ arvonta",
+                description: "Pyöräytä ja voita shoppailurahaa syksyyn!",
+                ends: "2026-10-04T23:59:00",
+                link: "https://pelit.bauhaus.fi/bauhaus-25-v"
+            },
+            {
+                id: "ikea-1",
+                title: "IKEA 30x30€ arvonta",
+                description: "Pelaa IKEA 30 vuotta -peliä ja osallistu 30 x 30 € lahjakortin arvontaan!",
+                ends: "2026-09-30T23:59:00",
+                link: "https://www.ikea.com/fi/fi/campaigns/30-vuotta-suomessa-pube5eed900/"
+            },
+            {
+                id: "tui-1",
+                title: "TUI 2000€ arvonta",
+                description: "Jaffa Italia arpoo yhden 2 000 € arvoisen TUIn matkalahjakortin, jolla voit suunnata vaikka suoraan Italian auringon alle.",
+                ends: "2026-10-31T23:59:00",
+                link: "https://www.tui.fi/fi/pelit/2000-vuotta-suomessa-pube5eed900/"
+            },
+            {
+                id: "lomalinja-1",
+                title: "Lomalinja 500€ arvonta",
+                description: "Kaikkien uutiskirjeen tilaajien kesken arvotaan 500 euron arvoinen matkalahjakortti.",
+                ends: "2027-01-04T23:59:00",
+                link: "https://www.lomalinja.fi/50-vuotta-50-tarinaa/"
+            },
+            {
+                id: "fazer-1",
+                title: "Fazer 50€ x 10 arvonta",
+                description: "Arvomme 10 kpl Fazer Store-lahjakortteja (arvo 50€).",
+                ends: "2026-09-30T23:59:00",
+                link: "https://www.k-ruoka.fi/artikkelit/kilpailut-ja-arvonnat/maista-uutuus-ja-osallistu-fazer-store-lahjakortin-arvontaan"
+            },
+            {
+                id: "paulig-1",
+                title: "Paulig 100€ arvonta",
+                description: "Osallistu tietovisaan ja voit voittaa 100 euron lahjakortin ruokakauppaan! Lisäksi pikapalkintona on mahdollisuus voittaa Santa Maria tuotepaketti.",
+                ends: "2026-09-30T23:59:00",
+                link: "https://www.paulig.fi/fi/tilaa-uutiskirjeemme"
+            },
+            {
+                id: "viinisaa-2",
+                title: "Viinisaa 100€ x 3 arvonta",
+                description: "Tilaa Sakken viinisää sähköpostiisi, niin olet mukana arvonnassa. Arvomme 3 × 100 € lahjakortin ruokakauppaan (S- tai K-ryhmä tai Lidl).",
+                ends: "2026-09-30T23:59:00",
+                link: "https://viinisaa.fi/"
+            },
+            {
+                id: "wowbowl-1",
+                title: "WowBowl 300€ K-Ryhmän arvonta",
+                description: "Osallistu WowBowl-arvonnan ja voit voittaa 300 euron lahjakortin K-ryhmän ruokakauppaan.",
+                ends: "2026-09-30T23:59:00",
+                link: "https://www.k-ruoka.fi/artikkelit/kilpailut-ja-arvonnat/tamminen-bowl-arvonta"
+            },
+            {
+                id: "karkkainen-1",
+                title: "Karkkainen SIKAPÄIVÄT arvonta",
+                description: "Pyöräytä ja voita palkintoja! Voita muun muassa 1 000 € lahjakortti, , 5x 24 tlk Red Bull -energiajuomia, PlayStation 5 -pelikonsoli, 20x pehmolelu, Ezviz RE4 Plus -robotti-imuri!",
+                ends: "2026-10-13T23:59:00",
+                link: "https://www.karkkainen.com/verkkokauppa/arvonta"
+            },
+            {
+                id: "vianor-1",
+                title: "Vianor Talvirenkaat arvonta",
+                description: "Voita uudet Nokian Tyres Hakkapeliitta 01® -nastarenkaat!",
+                ends: "2026-11-30T23:59:00",
+                link: "https://vianor.fi/renkaat/henkiloauto/talvirenkaat/talvirenkaat-2026/#arvonta"
+            },
+            {
+                id: "apetit-1",
+                title: "Apetit Fiskars arvonta",
+                description: "Kerro suosikkisi uusista Apetit Pannuaterioista ja voit voittaa Fiskars Norden -paistokasarin!",
+                ends: "2026-10-31T23:59:00",
+                link: "https://www.k-ruoka.fi/artikkelit/kilpailut-ja-arvonnat/apetit-pannuvihannekset-arvonta"
+            },
+            {
+                id: "santander-1",
+                title: "Voita Samsung TV 65-tuumaa",
+                description: "Ennusta seuraavan F1-kisan tuloksia ja voit voittaa F1 -tuotepalkintoja.  Samalla osallistut pääpalkinnon arvontaan. Pääpalkintona Samsung 65 TV, joka arvotaan viikolla 50.",
+                ends: "2026-10-04T23:59:00",
+                link: "https://www.santanderconsumer.fi/formula1"
+            },
+            {
+                id: "nokianpanimo-1",
+                title: "Nokian Panimo minijääkaappi arvonta",
+                description: "OSALLISTU ARVONTAAN JA VOITA SUN’N BUBBLY BANANA & LEGENDAARISEN HÄÄRIJÄN BRÄNDÄTTY MINIJÄÄKAAPPI – TIETENKIN LADATTUNA TÄYTEEN SITÄ ITSEÄÄN, ELI 24 KPL BUBBLY BANANA 0,33 TÖLKKEJÄ! KAIKILLE OSALLISTUJILLE MYÖS -15% ALEKUPONKI VERKKOKAUPPAAN!",
+                ends: "2026-10-16T23:59:00",
+                link: "https://nokianpanimo.fi/kilpailu"
+            },
+            {
+                id: "pagen-1",
+                title: "Pagen JBL partybox arvonta",
+                description: "Osallistu Pagen-arvonnan ja voita JBL partybox & merchiä!",
+                ends: "2026-10-04T23:59:00",
+                link: "https://www.pagen.fi/kilpailut/gifflar-kilpailut/"
+            },
+            {
+                id: "emp-1",
+                title: "Amon Amarth keikkaliput arvonta",
+                description: "Voita kaksi lippua Amon Amarth -keikalle + t-paita!",
+                ends: "2026-10-04T23:59:00",
+                link: "https://www.emp.fi/raffles/FI-00380.html"
+            },
+            {
+                id: "yhteishyva-1",
+                title: "Yhteishyvä OBH airfryer arvonta",
+                description: "Yksi keittiölaite tekee arjesta helpompaa – osallistu arvontaan ja voita air fryer!",
+                ends: "2026-10-11T23:59:00",
+            }, 
+            {
+                id: "celcius-1",
+                title: "Celcius jääkiekkomatka arvonta Miamiin",
+                description: "VOITA MATKA MIAMIIN JA NÄE FLORIDA PANTHERS LIVENÄ! ARVONNASSA MUKANA MYÖS MUITA HUIKEITA PALKINTOJA!",
+                ends: "2026-10-30T23:59:00",
+            },
+            {
+                id: "yvolve-1",
+                title: "Yvolve Nintendo Switch 2 arvonta",
+                description: "OSALLISTU JA VOITA NINTENDO SWITCH 2 -PELIKONSOLI + Pokémon Pokopia -peli!",
+                ends: "2026-12-14T23:59:00",
+                link: "https://yvolve.fi/pages/voita-nintendo-switch-2-konsoli-pokemon-pokopia"
+            },
+            {
+                id: "op-1",
+                title: "OP-Kumpula arvonta",
+                description: "Ratkaise OP Median kesäristikko 2026 ja voita Dyson V8 Cyclone -varsi-imuri (arvo noin 400 euroa)",
+                ends: "2026-09-30T23:59:00",
+                link: "https://www.op-media.fi/omat-rahat/kesaristikko-2026/"
+            },
+            {
+                id: "telia-1",
+                title: "Telia PS5 Pro arvonta",
+                description: "Osallistu Telia-arvonnan ja voita PS5 Pro- konsoli.",
+                ends: "2026-09-30T23:59:00",
+                link: "https://cloud.asiakas.telia.fi/uutiskirje-tilaus"
+            },
+            {
+                id: "kotimaassa-1",
+                title: "Voita Elämysloma Kotimaassa",
+                description: "Kolme palkintoa. Kolme erilaista elämystä. Sinä valitset suosikkisi. Kaipaisitko kylpylälomaa, pikkujoulutunnelmaa kartanossa vai Lapin taikaa hevosen selässä?.",
+                ends: "2026-10-31T23:59:00",
+                link: "https://www.kotimaassa.fi/kilpailu-valitse-palkintosi/"
+            },
+            {
+                id: "oetker-1",
+                title: "Voita rentouttava kylpyläloma PAULA-arvonnassa",
+                description: "Uusi PAULA Suklaavanukas + vaahtokarkki on täällä – voita unelmien kylpyläloma!",
+                ends: "2026-10-31T23:59:00",
+                link: "https://www.oetker.fi/tuotteet/promootiot/paula-arvonta"
+            },
+            {
+                id: "varta-1",
+                title: "Liigaliput Varta-arvonta",
+                description: "Osallistu visaan, voit voittaa liput lätkämatsiin!",
+                ends: "2027-02-28T23:59:00",
+                link: "https://www.varta-ag.com/fi/promotion-a-w-26/empower"
+            },
+            
+        ];
+
+        const jatkuvatArvonnat = [
+            {
+                id: "jatkuva-1",
+                title: "Aurinkomatkat 100€ joka kuukausi",
+                description: "Aurinkomatkat arpoo 100€ lahjakortin joka kuukausi.",
+                link: "https://www.aurinkomatkat.fi/tilaa-uutiskirje"
+            },
+            {
+                id: "jatkuva-2",
+                title: "Rintajouppi 100€ joka kuukausi",
+                description: "Osallistut automaattisesti 100 € S-ryhmän lahjakortin arvontaan joka kuukausi.",
+                link: "https://kampanjat.rintajouppi.fi/liity-jii-klubiin"
+            },
+            {
+                id: "jatkuva-3",
+                title: "Verkkokauppa.com 500€ joka kuukausi",
+                description: "Verkkokauppa arpoo kaikkien uutiskirjeen tilaajien kesken 500 € lahjakortteja kuukausittain.",
+                link: "https://www.verkkokauppa.com/fi/uutiskirje#tilaa-uutiskirje"
+            },
+            {
+                id: "jatkuva-4",
+                title: "Bauhaus 200€ joka kuukausi",
+                description: "Bauhaus arpoo kuukausittain kaikkien uutiskirjeen tilaajien kesken 200 € lahjakortin BAUHAUS-tavarataloihin.",
+                link: "https://www.bauhaus.fi/info/tilaa-uutiskirjeemme"
+            },
+            {
+                id: "jatkuva-5",
+                title: "Halva 25€ joka kuukausi",
+                description: "Halvan karkkiklubi arpoo kaikkien uutiskirjeen tilaajien kesken 25 € lahjakortin joka ikinen kuukausi.",
+                link: "https://halva.fi/pages/karkkiklubi"
+            },
+            {
+                id: "jatkuva-6",
+                title: "Finnkino elokuvatliput joka kuukausi",
+                description: "EPISODI arpoo kaikkien uutiskirjeen tilaajien kesken elokuvatliput joka ikinen kuukausi Finnkinoon.",
+                link: "https://www.episodi.fi/uutiskirje/"
+            }
+            
+            
+        ];
+
+        const aktiivisetContainer =
+            document.getElementById("aktiiviset-arvonnat");
+
+        const paattyneetContainer =
+            document.getElementById("paattyneet-arvonnat");
+
+        const jatkuvatContainer =
+            document.getElementById("jatkuvat-arvonnat");
+
+        const storagePrefix = "arvonta-applied-";
+
+        function hasApplied(id) {
+            return localStorage.getItem(storagePrefix + id) === "true";
+        }
+
+        function setApplied(id, value) {
+            if (value) {
+                localStorage.setItem(storagePrefix + id, "true");
+            } else {
+                localStorage.removeItem(storagePrefix + id);
+            }
+        }
+
+        function createCard(arvonta, ended = false, recurring = false) {
+            const wrapper = document.createElement("div");
+            wrapper.className = "card-wrapper";
+
+            const card = document.createElement("a");
+
+            card.href = arvonta.link;
+            card.target = "_blank";
+            card.rel = "noopener noreferrer";
+
+            card.className = `
+                giveaway-card
+                block
+                bg-white
+                rounded-2xl
+                p-6
+                shadow-lg
+                border
+                border-slate-100
+                ${ended ? "opacity-70" : ""}
+            `;
+
+            const applied = !ended && hasApplied(arvonta.id);
+
+            if (applied) {
+                card.classList.add("applied");
+            }
+
+            card.innerHTML = `
+                <div class="pointer-events-none">
+
+                    <div class="flex items-start justify-between gap-4">
+
+                        <h2 class="text-2xl font-bold ${
+                            ended
+                                ? "text-slate-500"
+                                : recurring
+                                    ? "text-green-500"
+                                    : "text-blue-400"
+                        }">
+                            ${arvonta.title}
+                        </h2>
+
+                        ${
+                            ended
+                                ? `
+                                    <span class="shrink-0 text-xs font-bold text-slate-500 bg-slate-200 px-2 py-1 rounded-full">
+                                        PÄÄTTYNYT
+                                    </span>
+                                `
+                                : recurring
+                                    ? `
+                                        <span class="shrink-0 text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded-full">
+                                            JATKUVA
+                                        </span>
+                                    `
+                                    : ""
+                        }
+
+                    </div>
+
+                    <p class="text-lg mt-3 text-slate-700">
+                        ${arvonta.description}
+                    </p>
+
+                    ${
+                        recurring
+                            ? `
+                                <div class="mt-5 flex items-center justify-between gap-4">
+                                    <p class="text-sm text-green-600 font-bold">
+                                        Jatkuvasti käynnissä
+                                    </p>
+
+                                    <span class="text-green-500 font-bold text-lg">
+                                        →
+                                    </span>
+                                </div>
+                            `
+                            : `
+                                <div class="mt-5 flex items-center justify-between gap-4">
+                                    <p class="text-sm text-slate-500">
+                                        ${ended ? "Päättyi:" : "Päättyy:"}
+                                        <span class="font-bold">
+                                            ${new Date(arvonta.ends).toLocaleString("fi-FI")}
+                                        </span>
+                                    </p>
+
+                                    <span class="${ended ? "text-slate-400" : "text-blue-400"} font-bold text-lg">
+                                        →
+                                    </span>
+                                </div>
+                            `
+                    }
+
+                    ${
+                        !ended
+                            ? `
+                                <label
+                                    class="pointer-events-auto mt-5 flex items-center gap-3 cursor-pointer select-none"
+                                    onclick="event.stopPropagation()"
+                                    onmousedown="event.stopPropagation()">
+
+                                    <input
+                                        type="checkbox"
+                                        class="checkbox w-5 h-5 cursor-pointer"
+                                        ${applied ? "checked" : ""}
+                                        data-arvonta-id="${arvonta.id}">
+
+                                    <span class="text-base text-slate-600">
+                                        Olen jo osallistunut tähän arvontaan
+                                    </span>
+
+                                </label>
+                            `
+                            : ""
+                    }
+
+                </div>
+            `;
+
+            if (!ended) {
+                const checkbox = card.querySelector(".checkbox");
+
+                checkbox.addEventListener("change", event => {
+                    event.stopPropagation();
+
+                    setApplied(
+                        arvonta.id,
+                        event.target.checked
+                    );
+
+                    if (event.target.checked) {
+                        card.classList.add("applied");
+                    } else {
+                        card.classList.remove("applied");
+                    }
+                });
+            }
+
+            wrapper.appendChild(card);
+
+            return wrapper;
+        }
+
+        function addCard(wrapper, container) {
+            container.appendChild(wrapper);
+
+            let currentX = 0;
+            let currentY = 0;
+
+            const card = wrapper.querySelector(".giveaway-card");
+
+            wrapper.addEventListener("mousemove", event => {
+                const rect = wrapper.getBoundingClientRect();
+
+                const x = event.clientX - rect.left;
+                const y = event.clientY - rect.top;
+
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                currentX = ((x - centerX) / centerX) * 8;
+                currentY = ((y - centerY) / centerY) * -8;
+
+                if (!card.classList.contains("pressed")) {
+                    card.style.transform =
+                        `rotateX(${currentY}deg) rotateY(${currentX}deg) scale3d(1.02, 1.02, 1.02)`;
+                }
+            });
+
+            wrapper.addEventListener("mousedown", event => {
+                if (event.target.closest("input, label")) {
+                    return;
+                }
+
+                card.classList.add("pressed");
+
+                card.style.transform =
+                    `rotateX(${currentY}deg) rotateY(${currentX}deg) scale3d(0.96, 0.96, 0.96)`;
+
+                card.style.boxShadow =
+                    "0 8px 15px rgba(0, 0, 0, 0.15)";
+            });
+
+            wrapper.addEventListener("mouseup", event => {
+                if (event.target.closest("input, label")) {
+                    return;
+                }
+
+                card.classList.remove("pressed");
+
+                card.style.transform =
+                    `rotateX(${currentY}deg) rotateY(${currentX}deg) scale3d(1.02, 1.02, 1.02)`;
+
+                card.style.boxShadow =
+                    "0 20px 40px rgba(0, 0, 0, 0.2)";
+            });
+
+            wrapper.addEventListener("mouseleave", () => {
+                card.classList.remove("pressed");
+
+                card.style.transform =
+                    "rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)";
+
+                card.style.boxShadow = "";
+            });
+
+            wrapper.addEventListener("touchstart", event => {
+                if (event.target.closest("input, label")) {
+                    return;
+                }
+
+                card.classList.add("pressed");
+
+                card.style.transform =
+                    "scale3d(0.96, 0.96, 0.96)";
+            }, { passive: true });
+
+            wrapper.addEventListener("touchend", event => {
+                if (event.target.closest("input, label")) {
+                    return;
+                }
+
+                card.classList.remove("pressed");
+
+                card.style.transform =
+                    "scale3d(1, 1, 1)";
+            }, { passive: true });
+        }
+
+        arvonnat.forEach(arvonta => {
+            const ended =
+                new Date(arvonta.ends).getTime() <= Date.now();
+
+            const card = createCard(arvonta, ended);
+
+            if (ended) {
+                addCard(card, paattyneetContainer);
+            } else {
+                addCard(card, aktiivisetContainer);
+            }
+        });
+
+        jatkuvatArvonnat.forEach(arvonta => {
+            const card = createCard(arvonta, false, true);
+
+            addCard(card, jatkuvatContainer);
+        });
+
+        const activeCount = document.querySelectorAll(
+            "#aktiiviset-arvonnat .giveaway-card"
+        ).length;
+
+        if (activeCount === 0) {
+            aktiivisetContainer.innerHTML = `
+                <div class="col-span-full text-center py-8 text-slate-500 text-lg">
+                    Tällä hetkellä ei ole aktiivisia arvontoja.
+                </div>
+            `;
+        }
+
+        const endedCount = document.querySelectorAll(
+            "#paattyneet-arvonnat .giveaway-card"
+        ).length;
+
+        if (endedCount === 0) {
+            paattyneetContainer.innerHTML = `
+                <div class="col-span-full text-center py-8 text-slate-400 text-lg">
+                    Ei päättyneitä arvontoja.
+                </div>
+            `;
+        }
+
+        const recurringCount = document.querySelectorAll(
+            "#jatkuvat-arvonnat .giveaway-card"
+        ).length;
+
+        if (recurringCount === 0) {
+            jatkuvatContainer.innerHTML = `
+                <div class="col-span-full text-center py-8 text-slate-400 text-lg">
+                    Ei jatkuvia arvontoja.
+                </div>
+            `;
+        }
+    </script>
+
+</body>
+
+</html>
